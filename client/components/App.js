@@ -1,6 +1,6 @@
 import React from 'react';
 
-import NavBar from './NavBar.js';
+import NavBar from './ui/NavBar.js';
 import LoginPanel from './LoginPanel.js';
 
 export default class App extends React.Component {
