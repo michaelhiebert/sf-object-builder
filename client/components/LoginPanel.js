@@ -1,7 +1,7 @@
 import React from "react";
 
-import Loading from "./Loading";
-import Alert from "./Alert";
+import Loading from "./ui/Loading";
+import Alert from "./ui/Alert";
 
 export default class LoginPanel extends React.Component {
   constructor(props) {
