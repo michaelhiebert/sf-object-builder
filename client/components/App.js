@@ -2,6 +2,7 @@ import React from 'react';
 
 import NavBar from './ui/NavBar.js';
 import LoginPanel from './LoginPanel.js';
+import UpsertMetadata from './UpsertMetadata.js';
 
 export default class App extends React.Component {
   state = {
@@ -36,7 +37,7 @@ export default class App extends React.Component {
           <LoginPanel />
         ) : (
           <div className="slds-m-around--xx-large">
-            {/* TODO: add CSV component */}
+            <UpsertMetadata />
           </div>
         )}
       </div>

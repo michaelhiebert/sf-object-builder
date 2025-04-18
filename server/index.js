@@ -45,6 +45,7 @@ function getSession(request, response) {
     response.status(401).send("No active session");
     return null;
   }
+
   return session;
 }
 
@@ -132,6 +133,7 @@ app.get("/auth/whoami", async (request, response) => {
   } catch (error) {
     console.error("Salesforce identity error: " + JSON.stringify(error));
     response.status(500).json(error);
+    
     return;
   }
 });

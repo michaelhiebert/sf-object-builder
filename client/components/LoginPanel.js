@@ -36,9 +36,6 @@ export default class LoginPanel extends React.Component {
       password,
     };
 
-    console.log(data);
-    console.log(data.username === "");
-
     if (data.username === "" || data.password === "") {
       this.setState({
         isLoading: false,
@@ -62,8 +59,7 @@ export default class LoginPanel extends React.Component {
         },
         body: JSON.stringify(data),
       });
-      console.log(response.ok);
-      console.log(this.state);
+
       if (response.ok) {
         this.setState({
           isLoading: false,
@@ -89,8 +85,6 @@ export default class LoginPanel extends React.Component {
         type: "error",
         message: "Incorrect Username and/or Password",
       };
-
-      console.log(this.state);
     } catch (err) {
       console.log("An error occured", err);
       this.setState({
