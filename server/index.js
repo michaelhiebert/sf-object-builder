@@ -45,6 +45,7 @@ function getSession(request, response) {
     response.status(401).send("No active session");
     return null;
   }
+
   return session;
 }
 
@@ -78,7 +79,7 @@ app.post("/auth/login", async (request, response) => {
     };
 
     // Redirect to app main page
-    return response.redirect("/index.html");
+    return response.send("Login successful");
   } catch (error) {
     console.log("Salesforce authorization error: " + JSON.stringify(error));
     response.status(500).json(error);
@@ -126,14 +127,38 @@ app.get("/auth/whoami", async (request, response) => {
 
   // Request session info from Salesforce
   const conn = resumeSalesforceConnection(session);
+
   try {
     const identity = await conn.identity();
     response.send(identity);
   } catch (error) {
     console.error("Salesforce identity error: " + JSON.stringify(error));
     response.status(500).json(error);
+
     return;
   }
+});
+
+app.post("/metadata/upsert", async (request, response) => {
+  const session = getSession(request, response);
+  if (session == null) {
+    return;
+  }
+
+  // Request session info from Salesforce
+  const conn = resumeSalesforceConnection(session);
+  const results = await conn.metadata.upsert("CustomObject", request.body);
+
+  // Debug individual results
+  for (let i = 0; i < results.length; i++) {
+    let result = results[i];
+    console.log("result: ", result);
+    console.log("success ? : " + result.success);
+    console.log("created ? : " + result.created);
+    console.log("fullName : " + result.fullName);
+  }
+
+  return response.send(results);
 });
 
 app.listen(app.get("port"), () => {
