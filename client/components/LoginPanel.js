@@ -52,12 +52,12 @@ export default class LoginPanel extends React.Component {
 
     try {
       this.setState({
-        isLoading: false,
+        isLoading: true,
         hasAlert: true,
       });
 
       this.alert = {
-        type: "success",
+        type: "info",
         message: "Login in...",
       };
 
@@ -73,7 +73,13 @@ export default class LoginPanel extends React.Component {
       if (response.ok) {
         this.setState({
           isLoading: false,
+          hasAlert: true,
         });
+
+        this.alert = {
+          type: "success",
+          message: "Logged in",
+        };
 
         window.location = "/index.html";
 

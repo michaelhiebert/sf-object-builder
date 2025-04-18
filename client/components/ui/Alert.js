@@ -13,7 +13,7 @@ export default class Alert extends React.Component {
     };
 
     const typeToIcon = {
-      info: "/assets/icons/utility-sprite/svg/symbols.svg#upload",
+      info: "/assets/icons/utility-sprite/svg/symbols.svg#sync",
       warning: "/assets/icons/utility-sprite/svg/symbols.svg#warning",
       error: "/assets/icons/utility-sprite/svg/symbols.svg#error",
       success: "/assets/icons/utility-sprite/svg/symbols.svg#success",
