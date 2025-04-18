@@ -18,7 +18,7 @@ export default class LoginPanel extends React.Component {
       type: "",
       message: "",
     };
-  }  
+  }
 
   handleInputChange = (e) => {
     this.setState({
@@ -51,6 +51,16 @@ export default class LoginPanel extends React.Component {
     }
 
     try {
+      this.setState({
+        isLoading: false,
+        hasAlert: true,
+      });
+
+      this.alert = {
+        type: "success",
+        message: "Login in...",
+      };
+
       const response = await fetch("/auth/login", {
         method: "POST",
         headers: {
@@ -63,13 +73,7 @@ export default class LoginPanel extends React.Component {
       if (response.ok) {
         this.setState({
           isLoading: false,
-          hasAlert: true,
         });
-
-        this.alert = {
-          type: "info",
-          message: "Login in...",
-        };
 
         window.location = "/index.html";
 
@@ -114,11 +118,7 @@ export default class LoginPanel extends React.Component {
 
             {this.state.hasAlert ? <Alert alert={this.alert} /> : null}
 
-            <form
-              className="slds-form"
-              method="POST"
-              onSubmit={this.handleSubmit}
-            >
+            <form className="slds-form" onSubmit={this.handleSubmit}>
               <div className="slds-form-element__row">
                 <label className="slds-form-element__label" htmlFor="username">
                   <abbr className="slds-required" title="required">
