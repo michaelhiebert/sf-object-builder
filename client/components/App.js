@@ -65,6 +65,8 @@ export default class App extends React.Component {
         body: JSON.stringify(data.metadata),
       });
 
+      const res = await response.json();
+
       if (response.ok) {
         this.setState({
           isLoading: false,
@@ -79,6 +81,11 @@ export default class App extends React.Component {
         return;
       }
 
+      let errors = "";
+      for (let i = 0; i < res.length; i++) {
+        errors += res[i];
+      }
+
       this.setState({
         isLoading: false,
         hasAlert: true,
@@ -86,7 +93,7 @@ export default class App extends React.Component {
 
       this.alert = {
         type: "error",
-        message: response.statusText,
+        message: res.length + " error(s) found:" + errors,
       };
     } catch (err) {
       console.log("An error occured", err);

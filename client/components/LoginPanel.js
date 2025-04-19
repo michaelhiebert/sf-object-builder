@@ -7,6 +7,8 @@ export default class LoginPanel extends React.Component {
   constructor(props) {
     super(props);
 
+    this.handleClose = this.handleClose.bind(this);
+
     this.state = {
       username: "",
       password: "",
@@ -18,6 +20,10 @@ export default class LoginPanel extends React.Component {
       type: "",
       message: "",
     };
+  }
+
+  handleClose() {
+    this.setState({hasAlert: false});
   }
 
   handleInputChange = (e) => {
@@ -122,7 +128,7 @@ export default class LoginPanel extends React.Component {
               Log in to your Salesforce Account:
             </p>
 
-            {this.state.hasAlert ? <Alert alert={this.alert} /> : null}
+            {this.state.hasAlert ? <Alert handleClose={this.handleClose} alert={this.alert} /> : null}
 
             <form className="slds-form" onSubmit={this.handleSubmit}>
               <div className="slds-form-element__row">

@@ -148,14 +148,23 @@ app.post("/metadata/upsert", async (request, response) => {
   // Request session info from Salesforce
   const conn = resumeSalesforceConnection(session);
   const results = await conn.metadata.upsert("CustomObject", request.body);
-
+  let errors = [];
   // Debug individual results
   for (let i = 0; i < results.length; i++) {
-    let result = results[i];
-    console.log("result: ", result);
+    const result = results[i];
+
+    //Debug messages
     console.log("success ? : " + result.success);
     console.log("created ? : " + result.created);
     console.log("fullName : " + result.fullName);
+
+    if (!result.success) {
+      errors.push(JSON.stringify(result.errors));
+    }
+  }
+
+  if (Array.isArray(errors) && errors.length) {
+    return response.status(400).send(errors);
   }
 
   return response.send(results);

@@ -32,7 +32,13 @@ export default class Alert extends React.Component {
           <button
             className="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse"
             title="Close"
-          ></button>
+            onClick={this.props.handleClose}
+          >
+            <svg className="slds-button__icon" aria-hidden="true">
+              <use xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+            </svg>
+            <span className="slds-assistive-text">Close</span>
+          </button>
         </div>
       </div>
     );
