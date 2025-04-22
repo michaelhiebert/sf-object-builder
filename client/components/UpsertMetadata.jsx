@@ -12,7 +12,7 @@ const UpsertMetadata = () => {
       type: "",
       message: "",
     });
-  const [metadata, setMetadata] = useState([
+  const [metadata] = useState([
     {
       fullName: "TestObject__c",
       label: "Upserted Object",
@@ -67,7 +67,7 @@ const UpsertMetadata = () => {
     window.scrollTo(0, 0);
     setIsLoading(true);
     try {
-      const response = await axios.post("/metadata/upsert", metadata, {
+      await axios.post("/metadata/upsert", metadata, {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -97,10 +97,6 @@ const UpsertMetadata = () => {
     }
   };
 
-  const handleChange = (e) => {
-    setMetadata(e.target.value);
-  };
-
   const handleClose = () => {
     setHasAlert(false);
   };
@@ -118,9 +114,6 @@ const UpsertMetadata = () => {
             className="slds-form-element__label slds-text-heading--medium"
             htmlFor="metadata"
           >
-            <abbr className="slds-required" title="required">
-              *
-            </abbr>
             Metadata
           </label>
           <div className="slds-form-element__control">

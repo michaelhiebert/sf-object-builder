@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
 const NavBar = ({ user }) => {
   const logout = () => {
-    window.location = '/auth/logout';
+    window.location = "/auth/logout";
   };
 
   return (
@@ -12,7 +12,10 @@ const NavBar = ({ user }) => {
         <div className="slds-col slds-has-flexi-truncate">
           <div className="slds-media slds-media--center slds-no-space slds-grow">
             <div className="slds-media__figure">
-              <svg aria-hidden="true" className="slds-icon slds-icon-text-default">
+              <svg
+                aria-hidden="true"
+                className="slds-icon slds-icon-text-default"
+              >
                 <use xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#salesforce1"></use>
               </svg>
             </div>
@@ -40,7 +43,10 @@ const NavBar = ({ user }) => {
         {/* Logout button */}
         {user && (
           <div className="slds-col slds-no-flex slds-grid">
-            <button onClick={logout} className="slds-button slds-button--neutral">
+            <button
+              onClick={logout}
+              className="slds-button slds-button--neutral"
+            >
               <svg
                 aria-hidden="true"
                 className="slds-button__icon--stateful slds-button__icon--left"

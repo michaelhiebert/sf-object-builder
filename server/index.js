@@ -7,39 +7,28 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import multer from "multer";
 import { fileURLToPath } from 'url';
-
-// const path = require("path"),
-//   express = require("express"),
-//   session = require("express-session"),
-//   jsforce = require("jsforce"),
-//   bodyParser = require("body-parser"),
-//   cors = require("cors"),
-//   multer = require("multer");
-
 import logger from "morgan";
 
 // Load and check config
-// require("dotenv").config();
 import dotenv from 'dotenv';
 dotenv.config();
 
 // Setup HTTP server
 const app = express();
 const port = process.env.PORT || 8080;
-// const __dirname = path.resolve();
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.set("port", port);
 
+// Enable endpoint response logging
 app.use(logger("dev"));
 
-// Serve static assets from 'public' (including scripts/)
-// app.use(express.static(path.resolve(process.cwd(), 'public')));
-
+// Resolve dist and index.html paths
 const distPath = path.resolve(__dirname, '../dist');
 const indexHtml = path.resolve(distPath, 'index.html');
 
+// Serve static assets from 'distPath'
 app.use(express.static(distPath));
 
 app.use(cors());
@@ -133,7 +122,7 @@ app.post("/auth/login", async (request, response) => {
   const password = request.body.password;
 
   try {
-    const userInfo = await conn.login(username, password);
+    await conn.login(username, password);
 
     // Store session data in server
     request.session.sfdcAuth = {
@@ -141,9 +130,6 @@ app.post("/auth/login", async (request, response) => {
       accessToken: conn.accessToken,
     };
 
-    // Redirect to app main page
-    // return response.send("Login successful");
-    // response.send(userInfo);
     // Redirect to app main page
     return response.redirect('/index.html');
   } catch (error) {

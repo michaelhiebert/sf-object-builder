@@ -4,11 +4,10 @@ import axios from "axios";
 // UI components
 import NavBar from "./ui/NavBar.jsx";
 import Alert from "./ui/Alert.jsx";
-import Loading from "./ui/Loading.jsx";
 
 // Components
-import UpsertMetadata from "./UpsertMetadata.jsx";
 import LoginPanel from "./LoginPanel.jsx";
+// import UpsertMetadata from "./UpsertMetadata.jsx";
 import FileUpload from "./FileUpload.jsx";
 
 const App = () => {
@@ -21,12 +20,14 @@ const App = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const response = await axios.get("/auth/whoami", { withCredentials: true });
+        const response = await axios.get("/auth/whoami", {
+          withCredentials: true,
+        });
         setUser(response.data); // response.data *is* the parsed JSON
       } catch (error) {
         if (error.response && error.response.status !== 401) {
           console.error("Failed to retrieve logged user.", error);
-  
+
           setAlert({
             type: "error",
             message:
@@ -36,7 +37,7 @@ const App = () => {
         }
       }
     };
-  
+
     checkUser();
   }, []);
 
@@ -48,8 +49,8 @@ const App = () => {
       ) : (
         <div className="slds-m-around--xx-large">
           {alert.message && <Alert alert={alert} />}
-          <UpsertMetadata />
-          {/* <FileUpload /> */}
+          {/* <UpsertMetadata /> */}
+          <FileUpload />
         </div>
       )}
     </div>

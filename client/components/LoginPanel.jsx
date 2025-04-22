@@ -54,7 +54,6 @@ const LoginPanel = () => {
 
       // Redirect after successful login
       window.location = "/index.html";
-      // window.location = '/auth/login';
     } catch (error) {
       setAlert({
         type: "error",
@@ -91,7 +90,6 @@ const LoginPanel = () => {
                   type="text"
                   id="username"
                   placeholder="Username"
-                  required
                   className="slds-input"
                   name="username"
                   value={formState.username}
@@ -112,7 +110,6 @@ const LoginPanel = () => {
                   type="password"
                   id="password"
                   placeholder="Password"
-                  required
                   className="slds-input"
                   name="password"
                   value={formState.password}
