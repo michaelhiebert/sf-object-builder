@@ -24,3 +24,5 @@ yarn-error.log*
 
 public/scripts
 public/assets
+
+dist/
