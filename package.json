@@ -46,11 +46,11 @@
     "vite": "^6.3.2"
   },
   "scripts": {
-    "dev": "concurrently \"vite\" \"nodemon server/index.js\"",
+    "dev": "concurrently \"vite\" \"nodemon server/server.js\"",
     "dev:client": "vite",
-    "dev:server": "nodemon server/index.js",
+    "dev:server": "nodemon server/server.js",
     "build": "vite build",
-    "serve": "NODE_ENV=production node server/index.js",
+    "serve": "NODE_ENV=production node server/server.js",
     "preinstall": "rm -fr public/assets",
     "postinstall": "cp -r node_modules/@salesforce-ux/design-system/assets public"
   },
