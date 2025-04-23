@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 // Auth
 import { logout } from "../api/auth.jsx";
@@ -45,16 +45,22 @@ const NavBar = ({ user, setUser }) => {
           </div>
         </div>
 
-        {/* Logged user name */}
-        {user && (
-          <div className="slds-col--padded slds-no-flex slds-grid slds-align-middle">
-            Hi {user.display_name}
+         {/* Navigation links */}
+         {user && (
+          <div className="slds-grid slds-align-middle slds-m-right_medium">
+            <Link to="/upload" className="slds-m-right_small">
+              Upload
+            </Link>
+            <Link to="/upsert" className="slds-m-right_small">
+              Upsert
+            </Link>
           </div>
         )}
 
-        {/* Logout button */}
+        {/* User info and logout */}
         {user && (
-          <div className="slds-col slds-no-flex slds-grid">
+          <div className="slds-col--padded slds-no-flex slds-grid slds-align-middle">
+            <span className="slds-col--padded slds-no-flex slds-grid slds-align-middle">Hi {user.display_name}</span>
             <button
               onClick={handleLogout}
               className="slds-button slds-button--neutral"

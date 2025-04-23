@@ -7,6 +7,7 @@ import { whoami } from "./api/auth.jsx";
 // UI components
 import NavBar from "./ui/NavBar.jsx";
 import Alert from "./ui/Alert.jsx";
+import Loading from "./ui/Loading.jsx";
 
 // Components
 import LoginPanel from "./LoginPanel.jsx";
@@ -15,6 +16,7 @@ import FileUpload from "./FileUpload.jsx";
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState({
     type: "",
     message: "",
@@ -22,7 +24,10 @@ const App = () => {
 
   useEffect(() => {
     whoami()
-      .then((data) => {setUser(data)})
+      .then((data) => {
+        setUser(data);
+        setIsLoading(false);
+      })
       .catch((error) => {
         if (error.response && error.response.status !== 401) {
           console.error("Failed to retrieve logged user.", error);
@@ -34,12 +39,14 @@ const App = () => {
               JSON.stringify(error.response.data),
           });
         }
+        setIsLoading(false);
       });
   }, []);
 
   return (
     <div>
       <NavBar user={user} setUser={setUser} />
+      {isLoading && <Loading />}
       {!user ? (
         <LoginPanel />
       ) : (
