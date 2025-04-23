@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // Auth
 import { whoami } from "./api/auth.jsx";
@@ -48,44 +48,16 @@ const App = () => {
       <NavBar user={user} setUser={setUser} />
       {isLoading && <Loading />}
       {!user ? (
-        <LoginPanel />
+        <Routes>
+          <Route path="*" element={<LoginPanel setUser={setUser} />} />
+        </Routes>
       ) : (
         <div className="slds-m-around--xx-large">
           {alert.message && <Alert alert={alert} />}
-          {/* <UpsertMetadata /> */}
-          {/* <FileUpload /> */}
           <Routes>
-            <Route
-              path="/"
-              element={
-                !user ? <LoginPanel /> : <Navigate to="/upload" replace />
-              }
-            />
-            <Route
-              path="/upload"
-              element={
-                user ? (
-                  // <div className="slds-m-around--xx-large">
-                    <FileUpload />
-                  // </div>
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-            <Route
-              path="/upsert"
-              element={
-                user ? (
-                  // <div className="slds-m-around--xx-large">
-                    <UpsertMetadata />
-                  // </div>
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-            {/* Catch-all route */}
+            <Route path="/" element={<Navigate to="/upload" />} />
+            <Route path="/upload" element={<FileUpload />} />
+            <Route path="/upsert" element={<UpsertMetadata />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>

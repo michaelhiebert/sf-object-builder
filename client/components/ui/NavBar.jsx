@@ -1,16 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 // Auth
 import { logout } from "../api/auth.jsx";
 
+// UI
+import Loading from "./Loading.jsx";
+
 const NavBar = ({ user, setUser }) => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     try {
+      setIsLoading(true);
       await logout();
       setUser(null); 
+      setIsLoading(false);
+      
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -19,6 +26,7 @@ const NavBar = ({ user, setUser }) => {
 
   return (
     <div className="slds-page-header" role="banner">
+      {isLoading && <Loading />}
       <div className="slds-grid">
         {/* Banner */}
         <div className="slds-col slds-has-flexi-truncate">
