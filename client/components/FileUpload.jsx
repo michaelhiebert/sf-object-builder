@@ -54,7 +54,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div className="slds-modal slds-fade-in-open">
+    // <div className="slds-modal slds-fade-in-open">
       <div className="slds-modal__container">
         <div className="slds-box slds-theme--shade">
           <p className="slds-text-heading--medium slds-m-bottom--medium">
@@ -100,7 +100,7 @@ const FileUpload = () => {
           </form>
         </div>
       </div>
-    </div>
+    // </div>
   );
 };
 

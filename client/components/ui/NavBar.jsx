@@ -1,9 +1,21 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const NavBar = ({ user }) => {
-  const logout = () => {
-    window.location = "/auth/logout";
-  };
+// Auth
+import { logout } from "../api/auth.jsx";
+
+const NavBar = ({ user, setUser }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setUser(null); 
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };  
 
   return (
     <div className="slds-page-header" role="banner">
@@ -44,7 +56,7 @@ const NavBar = ({ user }) => {
         {user && (
           <div className="slds-col slds-no-flex slds-grid">
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="slds-button slds-button--neutral"
             >
               <svg

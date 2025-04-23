@@ -30,7 +30,6 @@ const LoginPanel = () => {
     event.preventDefault();
     const { username, password } = formState;
 
-    console.log(formState);
     if (!username || !password) {
       setAlert({
         type: "warning",
@@ -46,8 +45,6 @@ const LoginPanel = () => {
       setHasAlert(true);
 
       const response = await axios.post("/auth/login", { username, password });
-
-      console.log(response);
 
       setAlert({ type: "success", message: "Logged in" });
       setHasAlert(true);
@@ -68,7 +65,7 @@ const LoginPanel = () => {
   };
 
   return (
-    <div className="slds-modal slds-fade-in-open">
+    // <div className="slds-modal slds-fade-in-open">
       <div className="slds-modal__container">
         <div className="slds-box slds-theme--shade">
           <p className="slds-text-heading--medium slds-m-bottom--medium">
@@ -137,7 +134,7 @@ const LoginPanel = () => {
           </form>
         </div>
       </div>
-    </div>
+    // </div>
   );
 };
 
