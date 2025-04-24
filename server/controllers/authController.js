@@ -2,7 +2,6 @@ import {
   loginToSalesforce,
   createSalesforceConnection,
 } from "../config/salesforce.js";
-import { getSession } from "../middleware/sessionCheck.js";
 
 export async function login(req, res) {
   const { username, password } = req.body;
@@ -11,7 +10,7 @@ export async function login(req, res) {
     const conn = await loginToSalesforce(username, password);
     const identity = await conn.identity();
 
-    req.session.user = {
+    const user = {
       username,
       orgId: identity.organization_id,
       name: identity.display_name,
@@ -19,42 +18,42 @@ export async function login(req, res) {
       instanceUrl: conn.instanceUrl,
     };
 
-    return res.redirect("/index.html");
+    req.session.user = user; // stored in session for future requests
+    req.user = user; // optionally set for this request
+
+    return res.status(200).json({ message: "Logged in", user });
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(401).json(error);
+    return res.status(401).json({
+      message: "Invalid Salesforce credentials",
+      error: error.message || error,
+    });
   }
 }
 
 export async function logout(req, res) {
-  const session = getSession(req, res);
-  if (!session) return;
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ message: "No user session" });
 
-  const conn = createSalesforceConnection(session);
+  const conn = createSalesforceConnection(user);
   try {
     await conn.logout();
     req.session.destroy((err) => {
       if (err) {
         console.error("Session destroy error:", err);
-
         return res.status(500).send("Failed to destroy session");
       }
-
       return res.sendStatus(200);
     });
   } catch (error) {
     console.error("Salesforce logout error:", error);
-
     return res.status(500).json({ message: "Salesforce logout failed", error });
   }
 }
 
 export async function whoami(req, res) {
-  const user = getSession(req, res);
-  if (!user) return;
-
   try {
-    const conn = createSalesforceConnection(user);
+    const conn = createSalesforceConnection(req.user);
     const identity = await conn.identity();
 
     return res.json(identity);

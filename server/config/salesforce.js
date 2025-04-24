@@ -1,10 +1,13 @@
 import jsforce from "jsforce";
 
-export function createSalesforceConnection(auth) {
+export function createSalesforceConnection(user) {
+  if (!user || !user.accessToken || !user.instanceUrl) {
+    throw new Error("Invalid Salesforce user session");
+  }
+
   return new jsforce.Connection({
-    instanceUrl: auth.instanceUrl,
-    accessToken: auth.accessToken,
-    version: process.env.apiVersion,
+    instanceUrl: user.instanceUrl,
+    accessToken: user.accessToken,
   });
 }
 

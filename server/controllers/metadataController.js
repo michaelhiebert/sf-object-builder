@@ -1,11 +1,7 @@
 import { createSalesforceConnection } from "../config/salesforce.js";
-import { getSession } from "../middleware/sessionCheck.js";
-
 export async function upsertMetadata(req, res) {
-  const session = getSession(req, res);
-  if (!session) return;
 
-  const conn = createSalesforceConnection(session);
+  const conn = createSalesforceConnection(req.user);
 
   try {
     const results = await conn.metadata.upsert("CustomObject", req.body);
