@@ -39,8 +39,9 @@ const CsvUploader = () => {
 
     try {
       setIsLoading(true);
-      // setIsUploading(true);
+
       const response = await axios.post("/api/upload/csv", formData);
+
       setFields(response.data.fields);
       setAlert({ type: "success", message: response.data.message });
     } catch (err) {
@@ -52,7 +53,6 @@ const CsvUploader = () => {
       }
     } finally {
       setIsLoading(false);
-      // setIsUploading(false);
     }
   };
 
@@ -100,7 +100,6 @@ const CsvUploader = () => {
         />
       )}
 
-      {/* {isLoading && <ProgressBar />} */}
       {isLoading && <Loading />}      
 
       <input
@@ -113,10 +112,8 @@ const CsvUploader = () => {
       <button
         className="slds-button slds-button_brand"
         onClick={handleUpload}
-        // disabled={isUploading}
         disabled={isLoading}
       >
-        {/* {isUploading ? "Uploading..." : "Upload"} */}
         {isLoading ? "Loading..." : "Upload"}
       </button>
 

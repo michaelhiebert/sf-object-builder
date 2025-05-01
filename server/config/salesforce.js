@@ -12,7 +12,7 @@ export function createSalesforceConnection(user) {
 }
 
 export async function loginToSalesforce(username, password) {
-  const conn = new jsforce.Connection({ loginUrl: process.env.loginUrl });
+  const conn = new jsforce.Connection({ loginUrl: process.env.LOGIN_URL });
   await conn.login(username, password);
   return conn;
 }

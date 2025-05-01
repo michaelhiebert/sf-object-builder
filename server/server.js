@@ -26,8 +26,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.resolve(__dirname, "../dist")));
 
 app.use(session({
-  secret: process.env.sessionSecretKey,
-  cookie: { secure: process.env.isHttps === "true" },
+  secret: process.env.SESSION_SECRET_KEY,
+  cookie: { secure: process.env.IS_HTTPS === "true" },
   resave: false,
   saveUninitialized: false,
 }));

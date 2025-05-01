@@ -11,7 +11,7 @@ jest.mock("jsforce", () => ({
 describe("config/salesforce", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.loginUrl = "https://login.salesforce.com";
+    process.env.LOGIN_URL = "https://login.salesforce.com";
   });
 
   describe("createSalesforceConnection", () => {
@@ -41,7 +41,7 @@ describe("config/salesforce", () => {
       jsforce.Connection.mockImplementationOnce(() => mockConn);
 
       const conn = await loginToSalesforce("user", "pass");
-      expect(jsforce.Connection).toHaveBeenCalledWith({ loginUrl: process.env.loginUrl });
+      expect(jsforce.Connection).toHaveBeenCalledWith({ loginUrl: process.env.LOGIN_URL });
       expect(mockConn.login).toHaveBeenCalledWith("user", "pass");
       expect(conn).toBe(mockConn);
     });
