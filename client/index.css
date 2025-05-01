@@ -1,0 +1,32 @@
+/* Fade-in animation (initial appearance) */
+.fade-in {
+  animation: fadeInAlert 0.3s ease-out;
+}
+
+/* Fade-out manually if needed */
+.fade-out {
+  animation: fadeOutAlert 0.3s ease-in;
+  opacity: 0;
+}
+
+@keyframes fadeInAlert {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutAlert {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}

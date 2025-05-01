@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { Routes, Route, Navigate } from "react-router-dom";
+
+// Auth
+import { whoami } from "./api/auth.jsx";
 
 // UI components
 import NavBar from "./ui/NavBar.jsx";
 import Alert from "./ui/Alert.jsx";
+import Loading from "./ui/Loading.jsx";
 
 // Components
 import LoginPanel from "./LoginPanel.jsx";
-// import UpsertMetadata from "./UpsertMetadata.jsx";
-import FileUpload from "./FileUpload.jsx";
+import CsvUploader from "./CsvUploader.jsx";
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState({
     type: "",
     message: "",
   });
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const response = await axios.get("/auth/whoami", {
-          withCredentials: true,
-        });
-        setUser(response.data); // response.data *is* the parsed JSON
-      } catch (error) {
+    whoami()
+      .then((data) => {
+        setUser(data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
         if (error.response && error.response.status !== 401) {
           console.error("Failed to retrieve logged user.", error);
 
@@ -35,22 +38,26 @@ const App = () => {
               JSON.stringify(error.response.data),
           });
         }
-      }
-    };
-
-    checkUser();
+        setIsLoading(false);
+      });
   }, []);
 
   return (
     <div>
-      <NavBar user={user} />
+      <NavBar user={user} setUser={setUser} />
+      {isLoading && <Loading />}
       {!user ? (
-        <LoginPanel />
+        <Routes>
+          <Route path="*" element={<LoginPanel setUser={setUser} />} />
+        </Routes>
       ) : (
         <div className="slds-m-around--xx-large">
           {alert.message && <Alert alert={alert} />}
-          {/* <UpsertMetadata /> */}
-          <FileUpload />
+          <Routes>
+            <Route path="/" element={<Navigate to="/upload" />} />
+            <Route path="/upload" element={<CsvUploader />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
         </div>
       )}
     </div>

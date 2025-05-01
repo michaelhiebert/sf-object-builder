@@ -1,12 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-const NavBar = ({ user }) => {
-  const logout = () => {
-    window.location = "/auth/logout";
-  };
+// Auth
+import { logout } from "../api/auth.jsx";
+
+// UI
+import Loading from "./Loading.jsx";
+
+const NavBar = ({ user, setUser }) => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoading(true);
+      await logout();
+      setUser(null); 
+      setIsLoading(false);
+      
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };  
 
   return (
     <div className="slds-page-header" role="banner">
+      {isLoading && <Loading />}
       <div className="slds-grid">
         {/* Banner */}
         <div className="slds-col slds-has-flexi-truncate">
@@ -33,18 +53,21 @@ const NavBar = ({ user }) => {
           </div>
         </div>
 
-        {/* Logged user name */}
-        {user && (
-          <div className="slds-col--padded slds-no-flex slds-grid slds-align-middle">
-            Hi {user.display_name}
+         {/* Navigation links */}
+         {user && (
+          <div className="slds-grid slds-align-middle slds-m-right_medium">
+            <Link to="/upload" className="slds-m-right_small">
+              Upload CSV
+            </Link>
           </div>
         )}
 
-        {/* Logout button */}
+        {/* User info and logout */}
         {user && (
-          <div className="slds-col slds-no-flex slds-grid">
+          <div className="slds-col--padded slds-no-flex slds-grid slds-align-middle">
+            <span className="slds-col--padded slds-no-flex slds-grid slds-align-middle">Hi {user.display_name}</span>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="slds-button slds-button--neutral"
             >
               <svg
