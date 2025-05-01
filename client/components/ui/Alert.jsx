@@ -3,7 +3,12 @@ import PropTypes from "prop-types";
 
 const ALERT_TIMEOUT_MS = 5000;
 
-const Alert = ({ alert, handleClose, autoDismiss = true, dismissAfter = ALERT_TIMEOUT_MS }) => {
+const Alert = ({
+  alert,
+  handleClose,
+  autoDismiss = true,
+  dismissAfter = ALERT_TIMEOUT_MS,
+}) => {
   const [visible, setVisible] = useState(true);
 
   const typeToClassName = {
@@ -22,6 +27,11 @@ const Alert = ({ alert, handleClose, autoDismiss = true, dismissAfter = ALERT_TI
 
   const iconName = typeToIcon[alert.type] || "info";
   const themeClass = typeToClassName[alert.type] || "slds-theme_info";
+
+  // whenever a new alert comes in, make sure it's visible
+  useEffect(() => {
+    setVisible(true);
+  }, [alert]);
 
   useEffect(() => {
     if (autoDismiss) {
@@ -44,12 +54,19 @@ const Alert = ({ alert, handleClose, autoDismiss = true, dismissAfter = ALERT_TI
       style={{ transition: "opacity 0.3s ease", opacity: visible ? 1 : 0 }}
     >
       <span className="slds-assistive-text">{alert.type || "info"}</span>
-      <span className="slds-icon_container slds-m-right_x-small" title={alert.type}>
+      <span
+        className="slds-icon_container slds-m-right_x-small"
+        title={alert.type}
+      >
         <svg className="slds-icon slds-icon_x-small" aria-hidden="true">
-          <use xlinkHref={`/assets/icons/utility-sprite/svg/symbols.svg#${iconName}`} />
+          <use
+            xlinkHref={`/assets/icons/utility-sprite/svg/symbols.svg#${iconName}`}
+          />
         </svg>
       </span>
-      <h2 className="slds-truncate" title={alert.message}>{alert.message}</h2>
+      <h2 className="slds-truncate" title={alert.message}>
+        {alert.message}
+      </h2>
       <div className="slds-notify__close">
         <button
           className="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse"

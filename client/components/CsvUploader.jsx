@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+
+// UI
 import Alert from "./ui/Alert";
-import { ProgressBar } from "./ui/ProgressBar";
+import Loading from "./ui/Loading.jsx";
 
 const CsvUploader = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,7 +11,6 @@ const CsvUploader = () => {
   const [fields, setFields] = useState([]);
   const [errors, setErrors] = useState([]);
   const [alert, setAlert] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [objectName, setObjectName] = useState("");
 
   const handleFileChange = (event) => {
@@ -33,13 +34,12 @@ const CsvUploader = () => {
     setObjectName(inferredObjectName);
 
     const formData = new FormData();
-    // formData.append("file", selectedFile);
     formData.append("csvFile", selectedFile);
     formData.append("objectName", inferredObjectName);
 
     try {
       setIsLoading(true);
-      setIsUploading(true);
+      // setIsUploading(true);
       const response = await axios.post("/api/upload/csv", formData);
       setFields(response.data.fields);
       setAlert({ type: "success", message: response.data.message });
@@ -52,16 +52,20 @@ const CsvUploader = () => {
       }
     } finally {
       setIsLoading(false);
-      setIsUploading(false);
+      // setIsUploading(false);
     }
   };
 
   const handleCreateFields = async () => {
     try {
+      setIsLoading(true);
+
       await axios.post("/api/metadata/create", {
         objectName,
         fields,
       });
+
+      setIsLoading(false);
 
       setAlert({
         type: "success",
@@ -70,8 +74,12 @@ const CsvUploader = () => {
       });
     } catch (err) {
       console.error(err);
+
+      setIsLoading(false);
+
       setAlert({
         type: "error",
+        autoDismiss: false,
         message: err.response?.data?.message || "Failed to create object",
       });
     }
@@ -83,8 +91,17 @@ const CsvUploader = () => {
         Upload CSV
       </h2>
 
-      {alert && <Alert alert={alert} handleClose={() => setAlert(null)} />}
-      {isLoading && <ProgressBar />}
+      {alert && (
+        <Alert
+          alert={alert}
+          handleClose={() => setAlert(null)}
+          autoDismiss={alert.autoDismiss ?? true}
+          dismissAfter={alert.dismissAfter}
+        />
+      )}
+
+      {/* {isLoading && <ProgressBar />} */}
+      {isLoading && <Loading />}      
 
       <input
         type="file"
@@ -96,9 +113,11 @@ const CsvUploader = () => {
       <button
         className="slds-button slds-button_brand"
         onClick={handleUpload}
-        disabled={isUploading}
+        // disabled={isUploading}
+        disabled={isLoading}
       >
-        {isUploading ? "Uploading..." : "Upload"}
+        {/* {isUploading ? "Uploading..." : "Upload"} */}
+        {isLoading ? "Loading..." : "Upload"}
       </button>
 
       {errors.length > 0 && (
