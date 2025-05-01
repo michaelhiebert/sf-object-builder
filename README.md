@@ -139,14 +139,14 @@ npm test
 
 ## How It Works
 
-1. Authentication
+1. **Authentication**
 - Login via `/api/auth/login` stores session with `accessToken` + `instanceUrl`.
 - Protected routes use `requireAuth` middleware.
 
-2. CSV Upload & Parsing
+2. **CSV Upload & Parsing**
 - Client `CsvUploader` posts to `/api/upload/csv`.
 - `csvController` uses `csv-parse` to validate headers & rows, returns `{ objectName, fields }`.
 
-3. Preview & Create
+3. **Preview & Create**
 - Client previews fields in a table.
 - “Create Fields” posts to `/api/metadata/create`, which calls JSForce Metadata API to create CustomObject and CustomField entries after that it assigns the FLS permissions to the fields.
