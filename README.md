@@ -1,70 +1,152 @@
-# Getting Started with Create React App
+# Salesforce Object Builder
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Salesforce Object Builder** is a full-stack React + Express app that lets you define Salesforce Custom Objects and Fields via CSV uploads. It parses your CSV, validates each row, previews the field definitions in the browser, and then creates the Custom Object and Custom Fields in your Salesforce org via the [JSForce](https://github.com/jsforce/jsforce) Metadata API.
 
-## Available Scripts
+## Repository Structure
 
-In the project directory, you can run:
+```
+sf-object-builder/
+├── client/                             # React frontend
+│   ├── components/                     # Reusable components
+│   │   ├── ui/                         # UI components
+│   │   │   ├── Alert.jsx               # Component for alerts like warnings, errors and success messages
+│   │   │   ├── Loading.jsx             # Component for loading screens
+│   │   │   └── NavBar.jsx              # Component for Navigation
+│   │   │
+│   │   ├── App.jsx                     # Main application component
+│   │   ├── CsvUploader.jsx             # Component that handles file uploads
+│   │   └── LoginPanel.jsx              # Login component
+│   │
+│   ├── index.css                       # Additional global styles
+│   ├── index.jsx                       # Entry point for React app
+│   └── vite.config.js                  # Vite config & proxy to Express
+│
+├── server/
+│   ├── __mocks__/                      # Salesforce connection mock files
+│   ├── __tests__/                      # Server Test files
+│   ├── config/
+│   │   └── salesforce.js               # Salesforce connection setup
+│   │
+│   ├── controllers/
+│   │   ├── authController.js           # Handles login, logout, whoami
+│   │   ├── csvController.js            # Handles file upload responses
+│   │   └── metadataController.js       # Handles Salesforce metadata
+│   │
+│   ├── middleware/
+│   │   └── requireAuth.js              # Authentication middleware
+│   │
+│   ├── routes/                         # Express Routers
+│   │
+│   ├── utils/                          # Helper functions
+│   │   ├── csvRoutes.js                # CSV parsing utility
+│   │ 	└── salesforceFields.js         # Metadata Fields and FLS utility
+│   │
+│   ├── server.js                       # Server Entry point
+│   ├── vite.config.js                  # Config file for serving the dev env and bundling for production
+│   └── testServer.js                   # Simplified app for server‐side tests
+│
+├── public/                             # Static assets copied from SLDS
+├── dist/                               # Production build output (client)
+├── .env.sample                         # Sample Environment variables
+├── .gitignore                          # Specifies intentionally untracked files that Git should ignore
+├── README.md                           # Project documentation
+├── vite.config.js                      # Config file for serving the dev env and bundling for production
+├── nodemon.js                          # Config file to run the server concurrently with vite
+└── package.json                        # Root-level dependencies
+```
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Node.js** ≥ 16 (v18+ recommended)
+- **npm** (or Yarn)
+- A Salesforce Developer Org (with API access)
+- Your org’s **login URL** and a user with API permissions
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+1. **Clone the repo**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/michaelhiebert/sf-object-builder.git
+cd sf-object-builder
+```
 
-### `npm run build`
+2. **Install dependencies**
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. **Configure environment**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Copy `.env.sample` to `.env` and fill in your values:
 
-### `npm run eject`
+```ini
+PORT=8080
+LOGIN_URL=https://login.salesforce.com          # or test.salesforce.com
+SESSION_SECRET_KEY=mySuperSecretKey
+IS_HTTPS=false                                  # true if you serve over HTTP
+API_VERSION=59.0
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. **Run in development**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The app uses concurrently to start both server and client watchers:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm run dev
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+This runs:
+- Express API on http://localhost:8080
+- Vite React app on http://localhost:5173 (with /api proxying to Express)
 
-## Learn More
+5. **Run for production**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm run build      # builds client into /dist
+npm run serve      # serves Express + static /dist at PORT
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+6. **Running tests**
 
-### Code Splitting
+The app uses Jest for tests.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm test
+```
 
-### Analyzing the Bundle Size
+## Key Dependencies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**Server**
+- express
+- jsforce
+- csv-parse
+- multer
+- express-session
 
-### Making a Progressive Web App
+**Client**
+- react
+- vite
+- axios
+- @salesforce-ux/design-system
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+**Dev**
+- nodemon
+- concurrently
+- jest
+- @testing-library
 
-### Advanced Configuration
+## How It Works
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+1. **Authentication**
+- Login via `/api/auth/login` stores session with `accessToken` + `instanceUrl`.
+- Protected routes use `requireAuth` middleware.
 
-### Deployment
+2. **CSV Upload & Parsing**
+- Client `CsvUploader` posts to `/api/upload/csv`.
+- `csvController` uses `csv-parse` to validate headers & rows, returns `{ objectName, fields }`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+3. **Preview & Create**
+- Client previews fields in a table.
+- “Create Fields” posts to `/api/metadata/create`, which calls JSForce Metadata API to create CustomObject and CustomField entries after that it assigns the FLS permissions to the fields.
