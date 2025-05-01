@@ -67,8 +67,8 @@ sf-object-builder/
 1. **Clone the repo**
 
 ```bash
-   git clone https://github.com/michaelhiebert/sf-object-builder.git
-   cd sf-object-builder
+git clone https://github.com/michaelhiebert/sf-object-builder.git
+cd sf-object-builder
 ```
 
 2. **Install dependencies**
