@@ -57,10 +57,7 @@ const NavBar = ({ user, setUser }) => {
          {user && (
           <div className="slds-grid slds-align-middle slds-m-right_medium">
             <Link to="/upload" className="slds-m-right_small">
-              Upload
-            </Link>
-            <Link to="/upsert" className="slds-m-right_small">
-              Upsert
+              Upload CSV
             </Link>
           </div>
         )}

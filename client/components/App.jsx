@@ -11,8 +11,7 @@ import Loading from "./ui/Loading.jsx";
 
 // Components
 import LoginPanel from "./LoginPanel.jsx";
-import UpsertMetadata from "./UpsertMetadata.jsx";
-import FileUpload from "./FileUpload.jsx";
+import CsvUploader from "./CsvUploader.jsx";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -56,8 +55,7 @@ const App = () => {
           {alert.message && <Alert alert={alert} />}
           <Routes>
             <Route path="/" element={<Navigate to="/upload" />} />
-            <Route path="/upload" element={<FileUpload />} />
-            <Route path="/upsert" element={<UpsertMetadata />} />
+            <Route path="/upload" element={<CsvUploader />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>

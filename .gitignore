@@ -27,3 +27,5 @@ public/assets
 
 dist/
 server/uploads/
+
+.env

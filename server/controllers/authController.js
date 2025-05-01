@@ -19,9 +19,17 @@ export async function login(req, res) {
     };
 
     req.session.user = user; // stored in session for future requests
-    req.user = user; // optionally set for this request
 
-    return res.status(200).json({ message: "Logged in", user });
+    // Check if this is an API request or a form submission
+    const isApiRequest = req.get('Content-Type') === 'application/json';
+    
+    if (isApiRequest) {
+      // API call - return JSON
+      return res.status(200).json({ message: "Logged in", user });
+    } else {
+      // Form submission - redirect
+      return res.redirect("/index.html");
+    }
   } catch (error) {
     console.error("Login error:", error);
     return res.status(401).json({

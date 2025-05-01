@@ -8,8 +8,8 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes.js";
-import fileRoutes from "./routes/fileRoutes.js";
 import metadataRoutes from "./routes/metadataRoutes.js";
+import csvRoutes from "./routes/csvRoutes.js";
 
 dotenv.config();
 
@@ -37,21 +37,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use("/auth", authRoutes);
-app.use("/upload", fileRoutes);
-app.use("/metadata", metadataRoutes);
+// API routes
+app.use("/api/auth", authRoutes);
+app.use("/api/metadata", metadataRoutes);
+app.use("/api/upload", csvRoutes);
 
 // Fallback for React SPA
+// serve index.html for _any_ route that doesn't start with /api
 app.use((req, res, next) => {
-  const excludedPaths = ["/api", "/auth", "/metadata", "/upload"];
-  const isExcluded = excludedPaths.some((path) => req.path.startsWith(path));
-
-  if (req.method === "GET" && !isExcluded) {
-    res.sendFile(path.resolve(__dirname, "../dist/index.html"));
-  } else {
-    next();
+  if (req.path.startsWith("/api/")) {
+    return next();
   }
+  res.sendFile(path.resolve(__dirname, "../dist/index.html"));
 });
 
 app.listen(port, () => {
