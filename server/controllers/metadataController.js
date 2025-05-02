@@ -4,6 +4,29 @@ import {
   buildFieldPermissions,
 } from "../utils/salesforceFields.js";
 
+const STANDARD_FIELDS = new Set([
+  "Id",
+  "IsDeleted",
+  "CreatedDate",
+  "CreatedById",
+  "LastModifiedDate",
+  "LastModifiedById",
+  "SystemModstamp",
+  "OwnerId",
+  "Name",
+]);
+
+function normalizeType(sfType) {
+  const t = (sfType || "").toLowerCase();
+  if (["string", "textarea", "email", "phone"].includes(t)) return "text";
+  if (["double", "integer", "long", "currency", "percent"].includes(t))
+    return "number";
+  if (["date", "datetime"].includes(t)) return "date";
+  if (t === "boolean") return "boolean";
+  if (["picklist", "multipicklist"].includes(t)) return "picklist";
+  return t;
+}
+
 export async function upsertMetadata(req, res) {
   const conn = createSalesforceConnection(req.user);
 
@@ -26,99 +49,102 @@ export async function upsertMetadata(req, res) {
 export async function compareMetadata(req, res) {
   try {
     const { objectName, fieldsFromCsv } = req.query;
-
     if (!objectName || !fieldsFromCsv) {
       return res
         .status(400)
         .json({ message: "Missing objectName or fieldsFromCsv" });
     }
 
-    const parsedFieldsFromCsv = JSON.parse(fieldsFromCsv);
+    // parse CSV payload and normalize each record to have .apiName + .dataType
+    const csvFields = JSON.parse(fieldsFromCsv).map((f) => {
+      const apiName = f.fieldApiName || f.apiName || f["Field API Name"];
+      const rawType = f.dataType || f["Data Type"] || "";
+      const dataType = rawType.toLowerCase();
+      return { ...f, apiName, dataType };
+    });
 
     const conn = createSalesforceConnection(req.session.user);
-    const metadata = await conn.describe(objectName);
 
-    const existingFields = metadata.fields.map((f) => ({
-      name: f.name,
-      label: f.label,
-      type: f.type,
-    }));
+    // // fetch the actual SObject’s field descriptions
+    // const describeResult = await conn.sobject(objectName).describe();
+    // const sfFields = describeResult.fields;
 
-    // Simple comparison
-    const missingInSalesforce = parsedFieldsFromCsv.filter(
-      (csvField) =>
-        !existingFields.some((sfField) => sfField.name === csvField.apiName)
+    // fetch the CustomObject’s metadata so we get all custom fields immediately
+    const customObjMd = await conn.metadata.read("CustomObject", objectName);
+    const sfFields = customObjMd.fields || [];
+
+    // const existing = sfFields.map((f) => ({
+    //   name: f.name,
+    //   label: f.label,
+    //   type: normalizeType(f.type),
+    // }));
+
+    // build a simple map of API-name → label/type
+    const existing = sfFields.map((f) => {
+      const full = f.fullName || f.name;
+      const apiName = full.includes(".") ? full.split(".").pop() : full;
+      return {
+        name: apiName,
+        label: f.label,
+        type: normalizeType(f.type),
+      };
+    });
+
+    // lookups
+    const csvByApi = Object.fromEntries(csvFields.map((f) => [f.apiName, f]));
+    const sfByName = Object.fromEntries(existing.map((f) => [f.name, f]));
+
+    // 1) in CSV but not in SF
+    const missingInSalesforce = csvFields.filter(
+      (f) => !sfByName[f.apiName] && !STANDARD_FIELDS.has(f.apiName)
     );
 
-    const missingInCsv = existingFields.filter(
-      (sfField) =>
-        !parsedFieldsFromCsv.some(
-          (csvField) => csvField.apiName === sfField.name
-        )
+    // 2) in SF but not in CSV, ignore standard fields
+    const missingInCsv = existing.filter(
+      (f) => !csvByApi[f.name] && !STANDARD_FIELDS.has(f.name)
     );
 
-    const typeMismatches = parsedFieldsFromCsv.filter((csvField) => {
-      const sfField = existingFields.find((f) => f.name === csvField.apiName);
-      return (
-        sfField &&
-        sfField.type.toLowerCase() !== csvField.dataType.toLowerCase()
-      );
+    // 3) type mismatches (only for __c fields)
+    const typeMismatches = csvFields
+      .filter((f) => sfByName[f.apiName] && f.apiName.endsWith("__c"))
+      .filter((f) => sfByName[f.apiName].type !== f.dataType.toLowerCase());
+
+    // 4) suggestions
+    const suggestions = [];
+
+    missingInSalesforce.forEach((f) =>
+      suggestions.push({
+        field: f.apiName,
+        action: "create",
+        details: `Create field "${f.apiName}" of type "${f.dataType}"`,
+      })
+    );
+    missingInCsv.forEach((f) =>
+      suggestions.push({
+        field: f.name,
+        action: "removeOrReview",
+        details: `Field "${f.name}" exists in Salesforce but not in CSV`,
+      })
+    );
+    typeMismatches.forEach((f) => {
+      const from = sfByName[f.apiName].type;
+      const to = f.dataType.toLowerCase();
+      suggestions.push({
+        field: f.apiName,
+        action: "updateType",
+        details: `Change type of "${f.apiName}" from "${from}" to "${to}"`,
+      });
     });
 
     return res.status(200).json({
       missingInSalesforce,
       missingInCsv,
       typeMismatches,
+      suggestions,
     });
   } catch (error) {
     console.error("[Compare Metadata Error]", error);
-    return res
-      .status(500)
-      .json({ message: "Failed to compare metadata", error: error.message });
-  }
-}
-
-export async function compareFields(req, res) {
-  try {
-    const { objectName, fieldsFromCsv } = req.query;
-
-    if (!objectName || !fieldsFromCsv) {
-      return res
-        .status(400)
-        .json({ message: "Missing objectName or fieldsFromCsv" });
-    }
-
-    const parsedCsvFields = JSON.parse(fieldsFromCsv);
-
-    // Mock response: assume Salesforce has only two fields
-    const salesforceFields = [
-      { apiName: "Field1__c", dataType: "text" },
-      { apiName: "Field2__c", dataType: "number" },
-    ];
-
-    const missingInSalesforce = parsedCsvFields.filter(
-      (field) => !salesforceFields.find((sf) => sf.apiName === field.apiName)
-    );
-
-    const typeMismatches = parsedCsvFields.filter((field) => {
-      const sfField = salesforceFields.find(
-        (sf) => sf.apiName === field.apiName
-      );
-      return sfField && sfField.dataType !== field.dataType;
-    });
-
-    const missingInCsv = salesforceFields.filter(
-      (sf) => !parsedCsvFields.find((field) => field.apiName === sf.apiName)
-    );
-
-    res.json({
-      missingInSalesforce,
-      missingInCsv,
-      typeMismatches,
-    });
-  } catch (error) {
-    console.error("Error comparing fields:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: error.message });
   }
 }
 
@@ -223,8 +249,10 @@ export async function listProfiles(req, res) {
     return res.json({ success: true, profiles });
   } catch (err) {
     console.error("[List Profiles Error]", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to list profiles", error: err.message });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to list profiles",
+      error: err.message,
+    });
   }
 }
