@@ -202,7 +202,7 @@ const CsvUploader = () => {
                     {key}
                   </th>
                 ))}
-                <th>Picklist values</th>
+                {/* <th>Picklist Options</th> */}
               </tr>
             </thead>
             <tbody>
@@ -235,42 +235,6 @@ const CsvUploader = () => {
           No fields to display.
         </p>
       )}
-
-      {/* === schema diff === */}
-      {/* {diffResult && (
-        <div className="slds-box slds-theme_shade slds-m-top--medium">
-          <h3 className="slds-text-heading--small">Schema Differences</h3>
-
-          <section className="slds-m-top--small">
-            <strong>Missing in Salesforce:</strong>
-            <ul>
-              {diffResult.missingInSalesforce.map((f, i) => (
-                <li key={i}>{f.name || f.apiName}</li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="slds-m-top--small">
-            <strong>Missing in CSV:</strong>
-            <ul>
-              {diffResult.missingInCsv.map((f, i) => (
-                <li key={i}>{f.name || f.apiName}</li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="slds-m-top--small">
-            <strong>Type Mismatches:</strong>
-            <ul>
-              {diffResult.typeMismatches.map((f, i) => (
-                <li key={i}>
-                  {f.apiName}: CSV “{f.dataType}” vs SF “{f.type}”
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      )} */}
 
       {diffResult && (
         <div className="slds-box slds-theme_shade slds-m-top--medium">

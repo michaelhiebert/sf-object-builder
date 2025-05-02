@@ -65,19 +65,9 @@ export async function compareMetadata(req, res) {
 
     const conn = createSalesforceConnection(req.session.user);
 
-    // // fetch the actual SObject’s field descriptions
-    // const describeResult = await conn.sobject(objectName).describe();
-    // const sfFields = describeResult.fields;
-
     // fetch the CustomObject’s metadata so we get all custom fields immediately
     const customObjMd = await conn.metadata.read("CustomObject", objectName);
     const sfFields = customObjMd.fields || [];
-
-    // const existing = sfFields.map((f) => ({
-    //   name: f.name,
-    //   label: f.label,
-    //   type: normalizeType(f.type),
-    // }));
 
     // build a simple map of API-name → label/type
     const existing = sfFields.map((f) => {
@@ -150,7 +140,6 @@ export async function compareMetadata(req, res) {
 
 export async function createSalesforceObject(req, res) {
   try {
-    // const { objectName, fields } = req.body;
     const { objectName, fields, profileName: requestedProfile } = req.body;
 
     if (!objectName || !fields?.length) {
@@ -183,9 +172,6 @@ export async function createSalesforceObject(req, res) {
     await conn.metadata.create("CustomField", fieldDefinitions);
 
     try {
-      // // TODO make this dynamic
-      // const profileName = "Standard";
-      // allow dynamic profile selection, default to "Standard"
       const profileName = requestedProfile || "Standard";
 
       const { permissions, skipped } = buildFieldPermissions(

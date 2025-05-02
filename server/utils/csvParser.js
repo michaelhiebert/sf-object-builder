@@ -62,15 +62,14 @@ export function csvParser(filePath) {
   });
 
   if (errors.length) {
-    throw new Error(`CSV Validation Failed:\n${errors.join("\n")}`);
+    const validationError = new Error("CSV Validation Failed");
+    validationError.details = errors;
+    throw validationError;
   }
 
   return records;
 }
 
-// expose parseFile on the default export so tests can do:
-//    import csvParser from '../utils/csvParser.js';
-//    csvParser.parseFile(...)
 const defaultExport = {
   parseFile: csvParser,
 };

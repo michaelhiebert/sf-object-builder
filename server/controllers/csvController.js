@@ -63,7 +63,6 @@ export async function processCsvUpload(req, res) {
     console.error("CSV parse error:", error);
     return res.status(400).json({
       success: false,
-      message: "Error processing CSV file",
       error: error.message,
       errors: error.details || [],
     });
