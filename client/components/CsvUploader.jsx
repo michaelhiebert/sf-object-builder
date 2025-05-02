@@ -14,6 +14,7 @@ const CsvUploader = () => {
   const [objectName, setObjectName] = useState("");
   const [profiles, setProfiles] = useState([]);
   const [selectedProfileName, setSelectedProfileName] = useState("Standard");
+  const [diffResult, setDiffResult] = useState(null);
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -85,6 +86,28 @@ const CsvUploader = () => {
         autoDismiss: false,
         message: err.response?.data?.message || "Failed to create object",
       });
+    }
+  };
+
+  const handleCompare = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams({
+        objectName,
+        fieldsFromCsv: JSON.stringify(fields),
+      });
+      const { data } = await axios.get(`/api/metadata/compare?${params}`);
+
+      setDiffResult(data);
+    } catch (err) {
+      console.log(err.response.data.message);
+      setAlert({
+        type: "error",
+        autoDismiss: false,
+        message: err.response?.data?.message || "Compare failed",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -195,6 +218,12 @@ const CsvUploader = () => {
             </tbody>
           </table>
           <button
+            className="slds-button slds-m-top--small slds-m-right--small"
+            onClick={handleCompare}
+          >
+            Compare Fields with Salesforce
+          </button>
+          <button
             className="slds-button slds-button_brand slds-m-top--small"
             onClick={handleCreateFields}
           >
@@ -205,6 +234,85 @@ const CsvUploader = () => {
         <p className="slds-text-body_small slds-m-top--small">
           No fields to display.
         </p>
+      )}
+
+      {/* === schema diff === */}
+      {/* {diffResult && (
+        <div className="slds-box slds-theme_shade slds-m-top--medium">
+          <h3 className="slds-text-heading--small">Schema Differences</h3>
+
+          <section className="slds-m-top--small">
+            <strong>Missing in Salesforce:</strong>
+            <ul>
+              {diffResult.missingInSalesforce.map((f, i) => (
+                <li key={i}>{f.name || f.apiName}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="slds-m-top--small">
+            <strong>Missing in CSV:</strong>
+            <ul>
+              {diffResult.missingInCsv.map((f, i) => (
+                <li key={i}>{f.name || f.apiName}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="slds-m-top--small">
+            <strong>Type Mismatches:</strong>
+            <ul>
+              {diffResult.typeMismatches.map((f, i) => (
+                <li key={i}>
+                  {f.apiName}: CSV “{f.dataType}” vs SF “{f.type}”
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      )} */}
+
+      {diffResult && (
+        <div className="slds-box slds-theme_shade slds-m-top--medium">
+          <h3 className="slds-text-heading--small">Schema Differences</h3>
+
+          {diffResult.missingInSalesforce.length === 0 &&
+          diffResult.missingInCsv.length === 0 &&
+          diffResult.typeMismatches.length === 0 ? (
+            <p className="slds-p-around_medium">No schema differences found.</p>
+          ) : (
+            <>
+              <section className="slds-m-top--small">
+                <strong>Missing in Salesforce:</strong>
+                <ul>
+                  {diffResult.missingInSalesforce.map((f, i) => (
+                    <li key={i}>{f.name || f.apiName}</li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="slds-m-top--small">
+                <strong>Missing in CSV:</strong>
+                <ul>
+                  {diffResult.missingInCsv.map((f, i) => (
+                    <li key={i}>{f.name || f.apiName}</li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="slds-m-top--small">
+                <strong>Type Mismatches:</strong>
+                <ul>
+                  {diffResult.typeMismatches.map((f, i) => (
+                    <li key={i}>
+                      {f.apiName}: CSV “{f.dataType}” vs SF “{f.type}”
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </>
+          )}
+        </div>
       )}
     </div>
   );

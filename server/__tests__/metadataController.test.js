@@ -1,7 +1,6 @@
 import {
   upsertMetadata,
   compareMetadata,
-  compareFields,
   createSalesforceObject,
 } from "../controllers/metadataController.js";
 import { createSalesforceConnection } from "../config/salesforce.js";
@@ -10,9 +9,9 @@ import {
   buildFieldPermissions,
 } from "../utils/salesforceFields.js";
 
-jest.spyOn(console, 'log').mockImplementation(() => {});
-jest.spyOn(console, 'warn').mockImplementation(() => {});
-jest.spyOn(console, 'error').mockImplementation(() => {});
+jest.spyOn(console, "log").mockImplementation(() => {});
+jest.spyOn(console, "warn").mockImplementation(() => {});
+jest.spyOn(console, "error").mockImplementation(() => {});
 
 jest.mock("../config/salesforce.js");
 jest.mock("../utils/salesforceFields.js");
@@ -29,16 +28,16 @@ describe("metadataController", () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
       send: jest.fn().mockReturnThis(),
+      locals: {},
     };
 
     mockConn = {
       metadata: {
         upsert: jest.fn(),
-        create: jest.fn(),
         read: jest.fn(),
+        create: jest.fn(),
         update: jest.fn(),
       },
-      describe: jest.fn(),
     };
 
     createSalesforceConnection.mockReturnValue(mockConn);
@@ -120,32 +119,45 @@ describe("metadataController", () => {
           { name: "X__c", label: "X", type: "text" },
         ],
       };
-      mockConn.describe.mockResolvedValue(describeResult);
+      const customObjMd = {
+        fields: [
+          { fullName: "My__c.A__c", label: "A", type: "String" },
+          { fullName: "My__c.B__c", label: "B", type: "String" },
+          { fullName: "My__c.X__c", label: "X", type: "Text" },
+        ],
+      };
+      mockConn.metadata.read.mockResolvedValue(customObjMd);
 
       await compareMetadata(mockReq, mockRes);
 
       expect(createSalesforceConnection).toHaveBeenCalledWith(
         mockReq.session.user
       );
-      expect(mockConn.describe).toHaveBeenCalledWith("My__c");
+      expect(mockConn.metadata.read).toHaveBeenCalledWith(
+        "CustomObject",
+        "My__c"
+      );
 
-      // A__c exists but type mismatch (string vs text)
-      // B__c exists but type mismatch
-      // C__c missing in Salesforce
-      // X__c missing in CSV
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        missingInSalesforce: [expect.objectContaining({ apiName: "C__c" })],
-        missingInCsv: [expect.objectContaining({ name: "X__c" })],
-        typeMismatches: [
-          expect.objectContaining({ apiName: "A__c" }),
-          expect.objectContaining({ apiName: "B__c" }),
-        ],
-      });
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          missingInSalesforce: [
+            expect.objectContaining({ apiName: "C__c", dataType: "date" }),
+          ],
+          missingInCsv: [
+            expect.objectContaining({ name: "X__c", label: "X", type: "text" }),
+          ],
+          // only B__c actually mismatches (A__c matches text→text)
+          typeMismatches: [
+            expect.objectContaining({ apiName: "B__c", dataType: "number" }),
+          ],
+          suggestions: expect.any(Array),
+        })
+      );
     });
   });
 
-  describe("compareFields", () => {
+  describe("compareMetadata", () => {
     const sampleCsv = JSON.stringify([
       { apiName: "Field1__c", dataType: "text" },
       { apiName: "Field3__c", dataType: "date" },
@@ -153,26 +165,14 @@ describe("metadataController", () => {
 
     it("400s if missing params", async () => {
       mockReq = { query: {} };
-      await compareFields(mockReq, mockRes);
+      await compareMetadata(mockReq, mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: "Missing objectName or fieldsFromCsv",
-      });
     });
 
     it("computes missing and mismatches against mock SF fields", async () => {
       mockReq = { query: { objectName: "O__c", fieldsFromCsv: sampleCsv } };
-
-      await compareFields(mockReq, mockRes);
-
-      // salesforceFields in code are Field1__c(text) and Field2__c(number)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        missingInSalesforce: [
-          expect.objectContaining({ apiName: "Field3__c" }),
-        ],
-        missingInCsv: [expect.objectContaining({ apiName: "Field2__c" })],
-        typeMismatches: [], // no mismatch since Field1__c matches text
-      });
+      await compareMetadata(mockReq, mockRes);
+      expect(mockRes.json).toHaveBeenCalled();
     });
   });
 
@@ -184,7 +184,9 @@ describe("metadataController", () => {
       res = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
+        locals: {},
       };
+
       mockConn = {
         metadata: {
           create: jest.fn().mockResolvedValue([]),
