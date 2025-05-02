@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 // UI
@@ -12,6 +12,8 @@ const CsvUploader = () => {
   const [errors, setErrors] = useState([]);
   const [alert, setAlert] = useState(null);
   const [objectName, setObjectName] = useState("");
+  const [profiles, setProfiles] = useState([]);
+  const [selectedProfileName, setSelectedProfileName] = useState("Standard");
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -63,6 +65,7 @@ const CsvUploader = () => {
       await axios.post("/api/metadata/create", {
         objectName,
         fields,
+        profileName: selectedProfileName,
       });
 
       setIsLoading(false);
@@ -85,6 +88,17 @@ const CsvUploader = () => {
     }
   };
 
+  useEffect(() => {
+    axios
+      .get("/api/metadata/profiles")
+      .then((resp) => setProfiles(resp.data.profiles || []))
+      .catch((err) => {
+        console.warn("Could not load profiles:", err);
+        // fall back to Standard only
+        setProfiles([{ fullName: "Standard", label: "Standard User" }]);
+      });
+  }, []);
+
   return (
     <div className="slds-box slds-theme_default">
       <h2 className="slds-text-heading--medium slds-m-bottom_medium">
@@ -100,7 +114,7 @@ const CsvUploader = () => {
         />
       )}
 
-      {isLoading && <Loading />}      
+      {isLoading && <Loading />}
 
       <input
         type="file"
@@ -135,6 +149,27 @@ const CsvUploader = () => {
           <h3 className="slds-text-heading--small">
             <strong>{objectName}</strong> Parsed Fields:
           </h3>
+
+          {/* PROFILE SELECTOR */}
+          <div className="slds-form-element slds-m-bottom_small">
+            <label className="slds-form-element__label" htmlFor="profileSelect">
+              Choose Profile for FLS
+            </label>
+            <div className="slds-form-element__control">
+              <select
+                id="profileSelect"
+                className="slds-select"
+                value={selectedProfileName}
+                onChange={(e) => setSelectedProfileName(e.target.value)}
+              >
+                {profiles.map((p) => (
+                  <option key={p.fullName} value={p.fullName}>
+                    {p.label || p.fullName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <table className="slds-table slds-table_cell-buffer slds-m-top--small">
             <thead>

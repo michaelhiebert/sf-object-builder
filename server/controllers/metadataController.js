@@ -124,7 +124,8 @@ export async function compareFields(req, res) {
 
 export async function createSalesforceObject(req, res) {
   try {
-    const { objectName, fields } = req.body;
+    // const { objectName, fields } = req.body;
+    const { objectName, fields, profileName: requestedProfile } = req.body;
 
     if (!objectName || !fields?.length) {
       return res.status(400).json({
@@ -156,8 +157,10 @@ export async function createSalesforceObject(req, res) {
     await conn.metadata.create("CustomField", fieldDefinitions);
 
     try {
-      // TODO make this dynamic
-      const profileName = "Standard";
+      // // TODO make this dynamic
+      // const profileName = "Standard";
+      // allow dynamic profile selection, default to "Standard"
+      const profileName = requestedProfile || "Standard";
 
       const { permissions, skipped } = buildFieldPermissions(
         objectName,
@@ -165,6 +168,8 @@ export async function createSalesforceObject(req, res) {
       );
       if (skipped.length) {
         console.warn("Skipped required fields for FLS:", skipped);
+        // include skipped info in the response
+        res.locals.skippedFieldPermissions = skipped;
       }
 
       // Only send the fields we want to update — not the full profile object
@@ -181,6 +186,7 @@ export async function createSalesforceObject(req, res) {
     res.json({
       success: true,
       message: `Custom object ${objectName} and ${fields.length} fields created.`,
+      skippedFieldPermissions: res.locals.skippedFieldPermissions || [],
     });
   } catch (error) {
     console.error("Salesforce object creation failed:", error);
@@ -189,5 +195,36 @@ export async function createSalesforceObject(req, res) {
       message: "Failed to create Salesforce object",
       error: error.message,
     });
+  }
+}
+
+export async function listProfiles(req, res) {
+  try {
+    if (!req.session?.user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Authentication required" });
+    }
+    const conn = createSalesforceConnection(req.session.user);
+
+    // Fetch all Profile metadata entries
+    const raw = await conn.metadata.list({ type: "Profile" });
+    const arr = Array.isArray(raw) ? raw : [raw];
+
+    // Turn API fullName into a human label
+    const profiles = arr.map((p) => ({
+      fullName: p.fullName,
+      label: p.fullName
+        .replace(/_/g, " ")
+        .replace(/([a-z])([A-Z])/g, "$1 $2") // split camelCase
+        .trim(),
+    }));
+
+    return res.json({ success: true, profiles });
+  } catch (err) {
+    console.error("[List Profiles Error]", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to list profiles", error: err.message });
   }
 }

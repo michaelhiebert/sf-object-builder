@@ -10,6 +10,10 @@ import {
   buildFieldPermissions,
 } from "../utils/salesforceFields.js";
 
+jest.spyOn(console, 'log').mockImplementation(() => {});
+jest.spyOn(console, 'warn').mockImplementation(() => {});
+jest.spyOn(console, 'error').mockImplementation(() => {});
+
 jest.mock("../config/salesforce.js");
 jest.mock("../utils/salesforceFields.js");
 
