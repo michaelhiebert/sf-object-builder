@@ -105,6 +105,18 @@ describe("metadataController", () => {
       });
     });
 
+    it("400s if missing params", async () => {
+      mockReq = { query: {} };
+      await compareMetadata(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+    });
+
+    it("computes missing and mismatches against mock SF fields", async () => {
+      mockReq = { query: { objectName: "O__c", fieldsFromCsv: sampleCsv } };
+      await compareMetadata(mockReq, mockRes);
+      expect(mockRes.json).toHaveBeenCalled();
+    });
+
     it("returns correct diffs", async () => {
       mockReq = {
         query: { objectName: "My__c", fieldsFromCsv: sampleCsv },
@@ -154,25 +166,6 @@ describe("metadataController", () => {
           suggestions: expect.any(Array),
         })
       );
-    });
-  });
-
-  describe("compareMetadata", () => {
-    const sampleCsv = JSON.stringify([
-      { apiName: "Field1__c", dataType: "text" },
-      { apiName: "Field3__c", dataType: "date" },
-    ]);
-
-    it("400s if missing params", async () => {
-      mockReq = { query: {} };
-      await compareMetadata(mockReq, mockRes);
-      expect(mockRes.status).toHaveBeenCalledWith(400);
-    });
-
-    it("computes missing and mismatches against mock SF fields", async () => {
-      mockReq = { query: { objectName: "O__c", fieldsFromCsv: sampleCsv } };
-      await compareMetadata(mockReq, mockRes);
-      expect(mockRes.json).toHaveBeenCalled();
     });
   });
 
